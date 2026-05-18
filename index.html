@@ -199,8 +199,8 @@
 
   function initMap() {
     var map = L.map("map", { zoomControl: true }).setView([38.6761, -77.3350], 17);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "© OpenStreetMap contributors", maxZoom: 19
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+      attribution: "© Esri — Esri, USGS, NOAA", maxZoom: 19
     }).addTo(map);
 
     var progress = getProgress();
