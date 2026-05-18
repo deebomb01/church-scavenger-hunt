@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="theme-color" content="#2563EB">
+  <title>Location 1: Main Entrance</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<div class="header">
+  <a href="../index.html" class="back-btn">← Map</a>
+  <div style="flex:1;text-align:center;">
+    <div class="header-title">Location Found! 🎉</div>
+  </div>
+  <span style="width:60px;"></span>
+</div>
+
+<div class="container">
+
+  <div id="progress-bar-wrap"></div>
+
+  <div class="location-badge">
+    <div class="location-number">1</div>
+    <div class="location-info">
+      <strong>🚪 Main Entrance</strong>
+      <span>You found the first location!</span>
+    </div>
+  </div>
+
+  <div class="verse-card">
+    <div class="verse-label">📖 Bible Verse</div>
+    <div class="verse-text">"I am the door. If anyone enters by me, he will be saved and will go in and out and find pasture."</div>
+    <div class="verse-ref">— John 10:9</div>
+  </div>
+
+  <div class="challenge-card">
+    <div class="challenge-label">⚡ Team Challenge</div>
+    <div class="challenge-text">Stand in a circle! Go around and have every team member say their name and their all-time favorite Bible story. You have 60 seconds — go! 🙌</div>
+  </div>
+
+  <div id="action-area">
+    <button class="btn btn-success btn-lg" onclick="markLocation()">
+      ✅ Mark as Found!
+    </button>
+    <p style="text-align:center;font-size:13px;color:#64748B;margin-top:10px;">Tap after completing the challenge together</p>
+  </div>
+
+  <div id="found-area" style="display:none;">
+    <div class="found-banner">
+      <span class="found-icon">🎉</span>
+      <p>Location 1 Complete! Keep going!</p>
+    </div>
+    <a href="../index.html" id="next-btn" class="btn btn-primary">🗺️ Back to Map</a>
+  </div>
+
+</div>
+
+<script src="../js/app.js"></script>
+<script>
+  var LOC_ID = 1;
+  window.addEventListener("DOMContentLoaded", function() {
+    requireTeam();
+    renderProgressBar("progress-bar-wrap", LOC_ID);
+    if (getProgress()[LOC_ID]) showFound();
+  });
+
+  function markLocation() {
+    markVisited(LOC_ID);
+    renderProgressBar("progress-bar-wrap", LOC_ID);
+    showFound();
+  }
+
+  function showFound() {
+    document.getElementById("action-area").style.display = "none";
+    document.getElementById("found-area").style.display = "block";
+    if (isComplete()) {
+      var btn = document.getElementById("next-btn");
+      btn.href = "../finish.html";
+      btn.textContent = "🏁 All 5 Found — Submit Your Time!";
+      btn.className = "btn btn-success";
+    }
+  }
+</script>
+
+</body>
+</html>

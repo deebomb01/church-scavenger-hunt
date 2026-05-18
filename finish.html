@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="theme-color" content="#10B981">
+  <title>Finish Line! | Move Church Hunt</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="header" style="background:#10B981;">
+  <span class="header-icon">🏁</span>
+  <div>
+    <div class="header-title">Finish Line!</div>
+    <div class="header-sub">Move Church Kids Hunt</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Not complete warning -->
+  <div id="not-complete" style="display:none;">
+    <div class="alert alert-warn">
+      ⚠️ You haven't found all 5 locations yet! Head back and keep searching.
+    </div>
+    <a href="index.html" class="btn btn-primary">🗺️ Back to Map</a>
+  </div>
+
+  <!-- Completion screen -->
+  <div id="complete-section" style="display:none;">
+
+    <div class="complete-screen">
+      <span class="big-icon">🏆</span>
+      <h2 id="team-name-display"></h2>
+      <p>You found all 5 locations! Amazing teamwork!</p>
+    </div>
+
+    <div class="card text-center" style="padding:24px;">
+      <div style="font-size:12px;color:#64748B;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Your Total Time</div>
+      <div class="timer" id="finish-time">--:--</div>
+      <div style="font-size:13px;color:#94A3B8;margin-top:4px;">From registration to finish</div>
+    </div>
+
+    <!-- Rank (shown after submission) -->
+    <div id="rank-card" class="card text-center" style="display:none;padding:28px;">
+      <div style="font-size:12px;color:#64748B;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Your Final Rank</div>
+      <div id="rank-display" style="font-size:64px;font-weight:800;color:#2563EB;line-height:1;margin-bottom:10px;"></div>
+      <div id="rank-message" style="font-size:16px;color:#475569;font-weight:600;"></div>
+    </div>
+
+    <!-- Submit button -->
+    <div id="submit-section">
+      <button class="btn btn-primary btn-lg" onclick="submitResult()" id="submit-btn">
+        🚀 Submit My Score to the Leaderboard!
+      </button>
+      <p style="text-align:center;font-size:13px;color:#94A3B8;margin-top:10px;">This records your finish time and rank</p>
+    </div>
+
+    <!-- Fallback: no script configured -->
+    <div id="no-script-msg" style="display:none;" class="alert alert-info">
+      📋 Show this screen to the event organizer to record your finish time!
+    </div>
+
+    <div class="divider"></div>
+
+    <a href="leaderboard.html" class="btn btn-outline" style="margin-bottom:10px;">📊 View Full Leaderboard</a>
+    <a href="index.html" class="btn btn-outline">🗺️ Back to Map</a>
+
+    <div class="text-center" style="margin-top:16px;">
+      <button onclick="newHunt()" style="background:none;border:none;color:#94A3B8;font-size:13px;cursor:pointer;text-decoration:underline;">
+        Start over with a different team
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<script src="js/app.js"></script>
+<script>
+  window.addEventListener("DOMContentLoaded", function() {
+    var team = requireTeam();
+    if (!team) return;
+
+    if (!isComplete()) {
+      document.getElementById("not-complete").style.display = "block";
+      return;
+    }
+
+    document.getElementById("complete-section").style.display = "block";
+    document.getElementById("team-name-display").textContent = team.name + " finished!";
+
+    var elapsed = Date.now() - team.startTime;
+    document.getElementById("finish-time").textContent = formatTimeShort(elapsed);
+  });
+
+  async function submitResult() {
+    var team = getTeam();
+    var btn = document.getElementById("submit-btn");
+    btn.disabled = true;
+    btn.textContent = "⏳ Submitting...";
+
+    var endTime = Date.now();
+    var result = await submitCompletion(team.name, team.startTime, endTime);
+
+    document.getElementById("submit-section").style.display = "none";
+
+    if (result && result.success) {
+      var rank = result.rank;
+      document.getElementById("rank-display").textContent = "#" + rank;
+      var msg = rank === 1 ? "🥇 FIRST PLACE! You crushed it!" :
+                rank === 2 ? "🥈 Second place! So close to the top!" :
+                rank === 3 ? "🥉 Third place! Great hustle!" :
+                "You are team #" + rank + " — awesome effort!";
+      document.getElementById("rank-message").textContent = msg;
+      document.getElementById("rank-card").style.display = "block";
+    } else {
+      document.getElementById("no-script-msg").style.display = "block";
+    }
+  }
+
+  function newHunt() {
+    if (confirm("Start over? This will clear your current team and progress.")) {
+      clearHunt();
+      window.location.href = "index.html";
+    }
+  }
+</script>
+
+</body>
+</html>

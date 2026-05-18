@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — QR Codes | Move Church Hunt</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+
+<div class="header no-print">
+  <a href="index.html" class="back-btn">← Back</a>
+  <div style="flex:1;text-align:center;">
+    <div class="header-title">🖨️ Admin — QR Codes</div>
+  </div>
+  <button onclick="window.print()" style="background:rgba(255,255,255,.2);border:none;color:white;padding:7px 13px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;">
+    🖨️ Print
+  </button>
+</div>
+
+<!-- Setup instructions (screen only) -->
+<div class="container no-print">
+
+  <div class="alert alert-info">
+    <strong>Before printing:</strong> Make sure you've pushed this project to GitHub Pages first. The QR codes below automatically use this page's URL to build the correct links.
+  </div>
+
+  <div class="card" style="padding:20px 22px;">
+    <div class="card-title">📋 Deployment Checklist</div>
+    <div style="display:flex;flex-direction:column;gap:10px;font-size:14px;line-height:1.5;">
+      <label style="display:flex;gap:10px;align-items:flex-start;text-transform:none;letter-spacing:0;font-weight:500;cursor:pointer;">
+        <input type="checkbox" style="margin-top:3px;width:16px;height:16px;flex-shrink:0;">
+        Create a GitHub repo (e.g. <code>church-scavenger-hunt</code>) and push all files
+      </label>
+      <label style="display:flex;gap:10px;align-items:flex-start;text-transform:none;letter-spacing:0;font-weight:500;cursor:pointer;">
+        <input type="checkbox" style="margin-top:3px;width:16px;height:16px;flex-shrink:0;">
+        Enable GitHub Pages: Settings → Pages → Branch: main → Save
+      </label>
+      <label style="display:flex;gap:10px;align-items:flex-start;text-transform:none;letter-spacing:0;font-weight:500;cursor:pointer;">
+        <input type="checkbox" style="margin-top:3px;width:16px;height:16px;flex-shrink:0;">
+        Set up Google Apps Script (see <code>backend/Code.gs</code>) and paste URL into <code>js/app.js</code>
+      </label>
+      <label style="display:flex;gap:10px;align-items:flex-start;text-transform:none;letter-spacing:0;font-weight:500;cursor:pointer;">
+        <input type="checkbox" style="margin-top:3px;width:16px;height:16px;flex-shrink:0;">
+        Open <strong>this admin page from GitHub Pages URL</strong> (not localhost) — then print
+      </label>
+      <label style="display:flex;gap:10px;align-items:flex-start;text-transform:none;letter-spacing:0;font-weight:500;cursor:pointer;">
+        <input type="checkbox" style="margin-top:3px;width:16px;height:16px;flex-shrink:0;">
+        Laminate each card and post at the matching campus location before the event
+      </label>
+    </div>
+  </div>
+
+  <div class="card" style="padding:20px 22px;">
+    <div class="card-title">📍 Location Placement Guide</div>
+    <div style="display:flex;flex-direction:column;gap:8px;font-size:14px;">
+      <div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid #E2E8F0;">
+        <div style="width:28px;height:28px;background:#2563EB;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">1</div>
+        <div><strong>🚪 Main Entrance</strong> — Post on or beside the front door</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid #E2E8F0;">
+        <div style="width:28px;height:28px;background:#2563EB;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">2</div>
+        <div><strong>⛹️ Playground</strong> — Post on a fence post or play structure</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid #E2E8F0;">
+        <div style="width:28px;height:28px;background:#2563EB;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">3</div>
+        <div><strong>📚 Children's Wing</strong> — Post on the hallway wall or classroom door</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid #E2E8F0;">
+        <div style="width:28px;height:28px;background:#2563EB;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">4</div>
+        <div><strong>🙏 Sanctuary</strong> — Post at the sanctuary entrance or a pew</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;padding:8px 0;">
+        <div style="width:28px;height:28px;background:#10B981;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">5</div>
+        <div><strong>🍽️ Fellowship Hall</strong> — Post near the kitchen or serving area</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="url-display" class="alert alert-success" style="word-break:break-all;"></div>
+
+</div>
+
+<!-- Print header (print only) -->
+<div class="print-title" style="text-align:center;padding:20px 0 16px;">
+  <h1 style="font-size:24px;font-weight:800;color:#1E293B;">Move Church Kids Scavenger Hunt</h1>
+  <p style="font-size:14px;color:#64748B;margin-top:4px;">Scan to reveal your clue — complete the challenge as a team!</p>
+</div>
+
+<!-- QR code grid -->
+<div style="padding:0 16px 40px;max-width:640px;margin:0 auto;">
+  <div class="qr-grid" id="qr-grid"></div>
+</div>
+
+<script src="js/app.js"></script>
+<script>
+  window.addEventListener("DOMContentLoaded", function() {
+    var base = window.location.href.replace(/admin\.html.*$/, "");
+    document.getElementById("url-display").innerHTML =
+      "✅ QR codes will link to: <strong>" + base + "location/N.html</strong>";
+
+    generateQRCodes(base);
+  });
+
+  function generateQRCodes(base) {
+    var grid = document.getElementById("qr-grid");
+    grid.innerHTML = "";
+
+    HUNT_CONFIG.locations.forEach(function(loc) {
+      var url = base + "location/" + loc.id + ".html";
+
+      var card = document.createElement("div");
+      card.className = "qr-card";
+
+      var numDiv = document.createElement("div");
+      numDiv.className = "qr-loc-num";
+      numDiv.textContent = loc.id;
+      card.appendChild(numDiv);
+
+      var qrWrap = document.createElement("div");
+      qrWrap.id = "qr-" + loc.id;
+      card.appendChild(qrWrap);
+
+      var nameEl = document.createElement("strong");
+      nameEl.textContent = loc.icon + " " + loc.name;
+      card.appendChild(nameEl);
+
+      var urlEl = document.createElement("small");
+      urlEl.textContent = url;
+      card.appendChild(urlEl);
+
+      grid.appendChild(card);
+
+      // Slight delay so DOM is ready
+      setTimeout(function() {
+        new QRCode(document.getElementById("qr-" + loc.id), {
+          text: url,
+          width: 180,
+          height: 180,
+          colorDark: "#1E293B",
+          colorLight: "#FFFFFF",
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      }, loc.id * 80);
+    });
+  }
+</script>
+
+</body>
+</html>

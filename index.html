@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="theme-color" content="#2563EB">
+  <title>Move Church Kids Scavenger Hunt</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+</head>
+<body>
+
+<div class="header">
+  <span class="header-icon">⛪</span>
+  <div>
+    <div class="header-title">Move Church Kids Hunt</div>
+    <div class="header-sub">Team Scavenger Hunt</div>
+  </div>
+  <a href="leaderboard.html" style="background:rgba(255,255,255,0.2);border:none;color:white;padding:7px 11px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">🏆 Board</a>
+</div>
+
+<!-- ── REGISTRATION ── -->
+<div id="reg-section">
+  <div class="hero">
+    <span class="hero-icon">🗺️</span>
+    <h1 class="hero-title">Welcome to the<br>Scavenger Hunt!</h1>
+    <p class="hero-sub">Find 5 hidden spots around campus, scan QR codes, read Bible verses, and complete team challenges!</p>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <div class="card-title">👥 Enter Your Team Name</div>
+      <div class="form-group">
+        <label for="team-name">Team Name</label>
+        <input type="text" id="team-name" placeholder="e.g. Team Grace" maxlength="30" autocomplete="off">
+      </div>
+      <div class="alert alert-info mb-14">
+        🏆 First team to find all 5 locations and submit wins a prize!
+      </div>
+      <button class="btn btn-primary btn-lg" onclick="startHunt()">
+        🚀 Start the Hunt!
+      </button>
+    </div>
+
+    <div class="card" style="background:linear-gradient(135deg,#1E3A8A,#2563EB);color:white;padding:24px;">
+      <div style="font-size:12px;font-weight:700;opacity:.8;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">How to Play</div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="background:rgba(255,255,255,.2);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">1</div>
+          <span style="font-size:15px;line-height:1.4;">Enter your team name and tap <strong>Start</strong></span>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="background:rgba(255,255,255,.2);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">2</div>
+          <span style="font-size:15px;line-height:1.4;">Use the map to find all 5 locations on campus</span>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="background:rgba(255,255,255,.2);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">3</div>
+          <span style="font-size:15px;line-height:1.4;">Scan the QR code posted at each location</span>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="background:rgba(255,255,255,.2);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">4</div>
+          <span style="font-size:15px;line-height:1.4;">Read the Bible verse &amp; complete the challenge together</span>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="background:rgba(255,255,255,.2);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">5</div>
+          <span style="font-size:15px;line-height:1.4;">Find all 5 and submit your finish — fastest team wins! 🎉</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── HUNT / MAP SECTION ── -->
+<div id="hunt-section" style="display:none;">
+  <div class="container">
+
+    <!-- Team + progress header -->
+    <div class="card" style="padding:16px 20px;margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div>
+          <div style="font-size:12px;color:#64748B;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Team</div>
+          <div id="team-display" style="font-size:20px;font-weight:800;color:#1E293B;"></div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:12px;color:#64748B;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Found</div>
+          <div id="progress-count" style="font-size:20px;font-weight:800;color:#2563EB;"></div>
+        </div>
+      </div>
+      <div id="progress-bar"></div>
+    </div>
+
+    <!-- Map -->
+    <div class="card" style="padding:0;overflow:hidden;margin-bottom:14px;">
+      <div id="map"></div>
+    </div>
+
+    <!-- Finish CTA (hidden until all 5 found) -->
+    <div id="finish-cta" style="display:none;margin-bottom:14px;">
+      <a href="finish.html" class="btn btn-success btn-lg">🏁 Submit Your Finish!</a>
+    </div>
+
+    <!-- Location checklist -->
+    <div id="locations-list"></div>
+
+    <div class="text-center mt-8">
+      <a href="leaderboard.html" class="btn btn-outline" style="margin-bottom:10px;">📊 View Leaderboard</a>
+    </div>
+    <div class="text-center" style="margin-top:8px;">
+      <button onclick="resetHunt()" style="background:none;border:none;color:#94A3B8;font-size:13px;cursor:pointer;text-decoration:underline;">
+        Reset / change team name
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/app.js"></script>
+<script>
+  window.addEventListener("DOMContentLoaded", function() {
+    var team = getTeam();
+    if (team) showHunt(team);
+
+    var input = document.getElementById("team-name");
+    input.addEventListener("keydown", function(e) {
+      if (e.key === "Enter") startHunt();
+    });
+  });
+
+  function startHunt() {
+    var input = document.getElementById("team-name");
+    var name = input.value.trim();
+    if (!name) {
+      input.style.borderColor = "#EF4444";
+      input.focus();
+      setTimeout(function() { input.style.borderColor = ""; }, 2000);
+      return;
+    }
+    var team = setTeam(name);
+    showHunt(team);
+  }
+
+  function showHunt(team) {
+    document.getElementById("reg-section").style.display = "none";
+    document.getElementById("hunt-section").style.display = "block";
+    document.getElementById("team-display").textContent = team.name;
+    updateProgress();
+    renderLocationList();
+    initMap();
+  }
+
+  function updateProgress() {
+    var count = visitedCount();
+    document.getElementById("progress-count").textContent = count + " / 5";
+    renderProgressBar("progress-bar", null);
+    if (isComplete()) {
+      document.getElementById("finish-cta").style.display = "block";
+    }
+  }
+
+  function renderLocationList() {
+    var progress = getProgress();
+    var html = "";
+    HUNT_CONFIG.locations.forEach(function(loc) {
+      var visited = !!progress[loc.id];
+      html += '<div class="card" style="display:flex;align-items:center;gap:14px;padding:14px 18px;' + (visited ? "border-left:5px solid #10B981;" : "") + '">' +
+        '<div style="width:46px;height:46px;background:' + (visited ? "#10B981" : "#2563EB") + ';color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;flex-shrink:0;">' +
+        (visited ? "✓" : loc.id) +
+        "</div>" +
+        '<div style="flex:1;">' +
+        '<div style="font-weight:700;font-size:16px;">' + loc.icon + " " + loc.name + "</div>" +
+        '<div style="font-size:13px;color:#64748B;margin-top:2px;">' + (visited ? "✅ Found!" : loc.hint) + "</div>" +
+        "</div>" +
+        '<span class="badge ' + (visited ? "badge-green" : "badge-blue") + '">' + (visited ? "Found" : "Not found") + "</span>" +
+        "</div>";
+    });
+    document.getElementById("locations-list").innerHTML = html;
+  }
+
+  function initMap() {
+    var map = L.map("map", { zoomControl: true }).setView([38.6445, -77.2966], 17);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "© OpenStreetMap contributors",
+      maxZoom: 19
+    }).addTo(map);
+
+    var progress = getProgress();
+    HUNT_CONFIG.locations.forEach(function(loc) {
+      var visited = !!progress[loc.id];
+      var color = visited ? "#10B981" : "#2563EB";
+      var icon = L.divIcon({
+        html: '<div style="background:' + color + ';color:white;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.28);">' +
+          (visited ? "✓" : loc.id) + "</div>",
+        className: "",
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
+        popupAnchor: [0, -20]
+      });
+      L.marker([loc.lat, loc.lng], { icon: icon })
+        .addTo(map)
+        .bindPopup("<strong>" + loc.icon + " " + loc.name + "</strong><br><small>" + (visited ? "✅ Found!" : "🔍 Not found yet") + "</small>");
+    });
+  }
+
+  function resetHunt() {
+    if (confirm("This will clear your team name and all progress. Are you sure?")) {
+      clearHunt();
+      window.location.reload();
+    }
+  }
+</script>
+
+</body>
+</html>
