@@ -7,12 +7,12 @@
   <title>Location 5: Fellowship Hall</title>
   <link rel="stylesheet" href="../css/style.css">
 </head>
-<body>
+<body style="padding-bottom:64px;">
 
 <div class="header">
   <a href="../index.html" class="back-btn">← Map</a>
   <div style="flex:1;text-align:center;">
-    <div class="header-title">Location Found! 🎉</div>
+    <div class="header-title">You Solved Clue #5! 🏆</div>
   </div>
   <span style="width:60px;"></span>
 </div>
@@ -57,12 +57,20 @@
 
 </div>
 
+<div style="position:fixed;bottom:0;left:0;right:0;background:#1E293B;color:white;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;z-index:999;box-shadow:0 -2px 8px rgba(0,0,0,.2);">
+  <span style="font-size:13px;opacity:.7;font-weight:600;">⏱️ Time Remaining</span>
+  <span id="timer-bar" style="font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:1px;"></span>
+</div>
+
 <script src="../js/app.js"></script>
 <script>
   var LOC_ID = 5;
   window.addEventListener("DOMContentLoaded", function() {
     requireTeam();
     renderProgressBar("progress-bar-wrap", LOC_ID);
+    startCountdownTimer("timer-bar", function() {
+      document.getElementById("timer-bar").textContent = "TIME'S UP!";
+    });
     if (getProgress()[LOC_ID]) showFound();
   });
 

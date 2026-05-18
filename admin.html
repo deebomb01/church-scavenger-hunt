@@ -3,83 +3,159 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin — QR Codes | Move Church Hunt</title>
+  <title>Admin | Move Church Hunt</title>
   <link rel="stylesheet" href="css/style.css">
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <style>
+    .tab-bar { display:flex; background:#F1F5F9; border-radius:12px; padding:4px; margin-bottom:16px; }
+    .tab-btn { flex:1; padding:10px; border:none; background:transparent; border-radius:9px; font-size:14px; font-weight:700; cursor:pointer; color:#64748B; transition:all .2s; }
+    .tab-btn.active { background:#FFFFFF; color:#2563EB; box-shadow:0 1px 6px rgba(0,0,0,.1); }
+    .tab-content { display:none; }
+    .tab-content.active { display:block; }
+    .team-row { background:#FFFFFF; border-radius:12px; padding:14px 16px; margin-bottom:10px; box-shadow:0 2px 8px rgba(37,99,235,.08); }
+    .team-row.finished { border-left:5px solid #10B981; }
+    .team-row.in-progress { border-left:5px solid #F59E0B; }
+    .team-row.not-started { border-left:5px solid #E2E8F0; }
+    .loc-dot { width:28px; height:28px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; flex-shrink:0; }
+    .loc-dot.found { background:#10B981; color:white; }
+    .loc-dot.missing { background:#E2E8F0; color:#94A3B8; }
+    .refresh-bar { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; font-size:13px; color:#64748B; }
+    .stat-card { background:#FFFFFF; border-radius:12px; padding:16px; text-align:center; box-shadow:0 2px 8px rgba(37,99,235,.08); }
+    .stat-num { font-size:32px; font-weight:800; color:#2563EB; line-height:1; margin-bottom:4px; }
+    .stat-label { font-size:12px; color:#64748B; font-weight:600; text-transform:uppercase; letter-spacing:.5px; }
+  </style>
 </head>
 <body>
 
-<div class="header no-print">
-  <a href="index.html" class="back-btn">← Back</a>
-  <div style="flex:1;text-align:center;">
-    <div class="header-title">🖨️ Admin — QR Codes</div>
+<!-- Password gate -->
+<div id="pw-gate" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#F0F7FF;padding:20px;">
+  <div style="background:white;border-radius:20px;padding:36px 28px;max-width:360px;width:100%;box-shadow:0 8px 32px rgba(37,99,235,.15);text-align:center;">
+    <div style="font-size:56px;margin-bottom:12px;">🔒</div>
+    <h2 style="font-size:22px;font-weight:800;color:#1E293B;margin-bottom:6px;">Admin Access</h2>
+    <p style="color:#64748B;font-size:14px;margin-bottom:24px;">Enter the admin password to continue</p>
+    <input type="password" id="pw-input" placeholder="Password" style="width:100%;padding:14px 16px;border:2px solid #E2E8F0;border-radius:10px;font-size:16px;outline:none;margin-bottom:12px;text-align:center;" onkeydown="if(event.key==='Enter')checkPw()">
+    <div id="pw-error" style="color:#EF4444;font-size:13px;font-weight:600;margin-bottom:10px;display:none;">Incorrect password. Try again.</div>
+    <button onclick="checkPw()" style="width:100%;padding:14px;background:#2563EB;color:white;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;">Enter Dashboard →</button>
   </div>
-  <button onclick="window.print()" style="background:rgba(255,255,255,.2);border:none;color:white;padding:7px 13px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;">
-    🖨️ Print
-  </button>
 </div>
 
-<!-- Setup instructions (screen only) -->
-<div class="container no-print">
+<!-- Admin dashboard (hidden until unlocked) -->
+<div id="dashboard" style="display:none;">
 
-  <div class="alert alert-info">
-    <strong>Before printing:</strong> Make sure you've pushed this project to GitHub Pages first. The QR codes below automatically use this page's URL to build the correct links.
-  </div>
-
-  <div class="card" style="padding:20px 22px;">
-    <div class="card-title">📋 Deployment Checklist</div>
-    <div style="display:flex;flex-direction:column;gap:10px;font-size:14px;line-height:1.5;">
-      <label style="display:flex;gap:10px;align-items:flex-start;text-transform:none;letter-spacing:0;font-weight:500;cursor:pointer;">
-        <input type="checkbox" style="margin-top:3px;width:16px;height:16px;flex-shrink:0;">
-        Create a GitHub repo (e.g. <code>church-scavenger-hunt</code>) and push all files
-      </label>
-      <label style="display:flex;gap:10px;align-items:flex-start;text-transform:none;letter-spacing:0;font-weight:500;cursor:pointer;">
-        <input type="checkbox" style="margin-top:3px;width:16px;height:16px;flex-shrink:0;">
-        Enable GitHub Pages: Settings → Pages → Branch: main → Save
-      </label>
-      <label style="display:flex;gap:10px;align-items:flex-start;text-transform:none;letter-spacing:0;font-weight:500;cursor:pointer;">
-        <input type="checkbox" style="margin-top:3px;width:16px;height:16px;flex-shrink:0;">
-        Set up Google Apps Script (see <code>backend/Code.gs</code>) and paste URL into <code>js/app.js</code>
-      </label>
-      <label style="display:flex;gap:10px;align-items:flex-start;text-transform:none;letter-spacing:0;font-weight:500;cursor:pointer;">
-        <input type="checkbox" style="margin-top:3px;width:16px;height:16px;flex-shrink:0;">
-        Open <strong>this admin page from GitHub Pages URL</strong> (not localhost) — then print
-      </label>
-      <label style="display:flex;gap:10px;align-items:flex-start;text-transform:none;letter-spacing:0;font-weight:500;cursor:pointer;">
-        <input type="checkbox" style="margin-top:3px;width:16px;height:16px;flex-shrink:0;">
-        Laminate each card and post at the matching campus location before the event
-      </label>
+  <div class="header">
+    <span class="header-icon">🛡️</span>
+    <div>
+      <div class="header-title">Admin Dashboard</div>
+      <div class="header-sub">Move Church Kids Hunt</div>
     </div>
+    <button onclick="lockAdmin()" style="background:rgba(255,255,255,.2);border:none;color:white;padding:7px 11px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">🔒 Lock</button>
   </div>
 
-  <div class="card" style="padding:20px 22px;">
-    <div class="card-title">📍 Location Placement Guide</div>
-    <div style="display:flex;flex-direction:column;gap:8px;font-size:14px;">
-      <div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid #E2E8F0;">
-        <div style="width:28px;height:28px;background:#2563EB;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">1</div>
-        <div><strong>🚪 Main Entrance</strong> — Post on or beside the front door</div>
-      </div>
-      <div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid #E2E8F0;">
-        <div style="width:28px;height:28px;background:#2563EB;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">2</div>
-        <div><strong>⛹️ Playground</strong> — Post on a fence post or play structure</div>
-      </div>
-      <div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid #E2E8F0;">
-        <div style="width:28px;height:28px;background:#2563EB;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">3</div>
-        <div><strong>📚 Children's Wing</strong> — Post on the hallway wall or classroom door</div>
-      </div>
-      <div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid #E2E8F0;">
-        <div style="width:28px;height:28px;background:#2563EB;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">4</div>
-        <div><strong>🙏 Sanctuary</strong> — Post at the sanctuary entrance or a pew</div>
-      </div>
-      <div style="display:flex;gap:10px;align-items:center;padding:8px 0;">
-        <div style="width:28px;height:28px;background:#10B981;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">5</div>
-        <div><strong>🍽️ Fellowship Hall</strong> — Post near the kitchen or serving area</div>
-      </div>
+  <div class="container">
+
+    <!-- Tabs -->
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('progress')">📊 Team Progress</button>
+      <button class="tab-btn" onclick="switchTab('qr')">🖨️ QR Codes</button>
     </div>
+
+    <!-- ── PROGRESS TAB ── -->
+    <div id="tab-progress" class="tab-content active">
+
+      <!-- Stats row -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
+        <div class="stat-card">
+          <div class="stat-num" id="stat-teams">—</div>
+          <div class="stat-label">Teams</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-finished" style="color:#10B981;">—</div>
+          <div class="stat-label">Finished</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-active" style="color:#F59E0B;">—</div>
+          <div class="stat-label">Active</div>
+        </div>
+      </div>
+
+      <div class="refresh-bar">
+        <span id="last-updated">Not loaded yet</span>
+        <button onclick="loadProgress()" style="background:#EFF6FF;border:none;color:#2563EB;padding:6px 14px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">↻ Refresh</button>
+      </div>
+
+      <!-- No script warning -->
+      <div id="no-script-warn" style="display:none;" class="alert alert-warn">
+        ⚠️ Google Apps Script URL not set. Open <code>js/app.js</code> and add your <code>scriptUrl</code> to enable live tracking.
+      </div>
+
+      <!-- Loading -->
+      <div id="progress-loading" class="card text-center" style="padding:40px;display:none;">
+        <div style="font-size:32px;margin-bottom:10px;">⏳</div>
+        <div style="color:#64748B;">Loading team data...</div>
+      </div>
+
+      <!-- Empty -->
+      <div id="progress-empty" style="display:none;" class="card text-center" style="padding:40px;">
+        <div style="font-size:40px;margin-bottom:10px;">🏃</div>
+        <div style="font-weight:700;font-size:17px;margin-bottom:6px;">No teams yet</div>
+        <div style="color:#64748B;font-size:14px;">Teams will appear here once they start finding locations.</div>
+      </div>
+
+      <!-- Team list -->
+      <div id="team-list"></div>
+
+      <!-- Location key -->
+      <div class="card" style="padding:16px 18px;">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#64748B;margin-bottom:10px;">Location Key</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div id="loc-key-items"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── QR CODES TAB ── -->
+    <div id="tab-qr" class="tab-content">
+
+      <div class="alert alert-info">
+        Open this page from your <strong>GitHub Pages URL</strong> before printing — QR codes auto-build from the live URL.
+      </div>
+
+      <div class="card" style="padding:18px 20px;margin-bottom:14px;">
+        <div class="card-title">📍 Location Placement Guide</div>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:14px;">
+          <div style="display:flex;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid #E2E8F0;">
+            <div style="width:26px;height:26px;background:#2563EB;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;">1</div>
+            <div><strong>🚪 Main Entrance</strong> — Post on or beside the front door</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid #E2E8F0;">
+            <div style="width:26px;height:26px;background:#2563EB;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;">2</div>
+            <div><strong>⛹️ Playground</strong> — Post on a fence post or play structure</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid #E2E8F0;">
+            <div style="width:26px;height:26px;background:#2563EB;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;">3</div>
+            <div><strong>📚 Children's Wing</strong> — Post on the hallway wall or classroom door</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid #E2E8F0;">
+            <div style="width:26px;height:26px;background:#2563EB;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;">4</div>
+            <div><strong>🙏 Sanctuary</strong> — Post at the sanctuary entrance or a pew</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;padding:6px 0;">
+            <div style="width:26px;height:26px;background:#10B981;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;">5</div>
+            <div><strong>🍽️ Fellowship Hall</strong> — Post near the kitchen or serving area</div>
+          </div>
+        </div>
+      </div>
+
+      <button onclick="window.print()" class="btn btn-primary" style="margin-bottom:16px;">🖨️ Print QR Codes</button>
+
+      <div id="url-display" class="alert alert-success" style="word-break:break-all;margin-bottom:16px;"></div>
+
+      <div class="qr-grid" id="qr-grid"></div>
+
+    </div>
+
   </div>
-
-  <div id="url-display" class="alert alert-success" style="word-break:break-all;"></div>
-
 </div>
 
 <!-- Print header (print only) -->
@@ -88,58 +164,154 @@
   <p style="font-size:14px;color:#64748B;margin-top:4px;">Scan to reveal your clue — complete the challenge as a team!</p>
 </div>
 
-<!-- QR code grid -->
-<div style="padding:0 16px 40px;max-width:640px;margin:0 auto;">
-  <div class="qr-grid" id="qr-grid"></div>
-</div>
-
 <script src="js/app.js"></script>
 <script>
+  // ── Auth ──────────────────────────────────────────────────────────────────
   window.addEventListener("DOMContentLoaded", function() {
-    var base = window.location.href.replace(/admin\.html.*$/, "");
-    document.getElementById("url-display").innerHTML =
-      "✅ QR codes will link to: <strong>" + base + "location/N.html</strong>";
-
-    generateQRCodes(base);
+    if (sessionStorage.getItem("admin_unlocked") === "1") {
+      showDashboard();
+    }
+    document.getElementById("pw-input").focus();
   });
 
-  function generateQRCodes(base) {
+  function checkPw() {
+    var val = document.getElementById("pw-input").value;
+    if (val === ADMIN_PASSWORD) {
+      sessionStorage.setItem("admin_unlocked", "1");
+      showDashboard();
+    } else {
+      document.getElementById("pw-error").style.display = "block";
+      document.getElementById("pw-input").value = "";
+      document.getElementById("pw-input").focus();
+    }
+  }
+
+  function showDashboard() {
+    document.getElementById("pw-gate").style.display = "none";
+    document.getElementById("dashboard").style.display = "block";
+    buildLocationKey();
+    loadProgress();
+    generateQRCodes();
+    // Auto-refresh every 30 seconds
+    setInterval(loadProgress, 30000);
+  }
+
+  function lockAdmin() {
+    sessionStorage.removeItem("admin_unlocked");
+    window.location.reload();
+  }
+
+  // ── Tabs ──────────────────────────────────────────────────────────────────
+  function switchTab(name) {
+    document.querySelectorAll(".tab-btn").forEach(function(b) { b.classList.remove("active"); });
+    document.querySelectorAll(".tab-content").forEach(function(c) { c.classList.remove("active"); });
+    document.querySelector('[onclick="switchTab(\'' + name + '\')"]').classList.add("active");
+    document.getElementById("tab-" + name).classList.add("active");
+  }
+
+  // ── Progress tab ──────────────────────────────────────────────────────────
+  async function loadProgress() {
+    if (!HUNT_CONFIG.scriptUrl) {
+      document.getElementById("no-script-warn").style.display = "block";
+      document.getElementById("progress-loading").style.display = "none";
+      return;
+    }
+    document.getElementById("progress-loading").style.display = "block";
+    document.getElementById("team-list").innerHTML = "";
+    document.getElementById("progress-empty").style.display = "none";
+
+    var data = await fetchAdminProgress();
+    document.getElementById("progress-loading").style.display = "none";
+
+    if (!data || !data.teams || data.teams.length === 0) {
+      document.getElementById("progress-empty").style.display = "block";
+      updateStats(0, 0, 0);
+      return;
+    }
+
+    var teams = data.teams;
+    var finished = teams.filter(function(t) { return t.finished; }).length;
+    var active = teams.filter(function(t) { return !t.finished && t.count > 0; }).length;
+    updateStats(teams.length, finished, active);
+
+    var html = "";
+    teams.forEach(function(team, i) {
+      var statusClass = team.finished ? "finished" : team.count > 0 ? "in-progress" : "not-started";
+      var statusLabel = team.finished
+        ? '<span style="background:#ECFDF5;color:#065F46;padding:3px 10px;border-radius:100px;font-size:12px;font-weight:700;">✅ Finished</span>'
+        : team.count > 0
+          ? '<span style="background:#FFFBEB;color:#92400E;padding:3px 10px;border-radius:100px;font-size:12px;font-weight:700;">🔍 Active</span>'
+          : '<span style="background:#F1F5F9;color:#64748B;padding:3px 10px;border-radius:100px;font-size:12px;font-weight:700;">Not started</span>';
+
+      var rankBadge = team.finished && team.rank
+        ? (team.rank === 1 ? "🥇" : team.rank === 2 ? "🥈" : team.rank === 3 ? "🥉" : "#" + team.rank) + " "
+        : "";
+
+      var dots = "";
+      for (var n = 1; n <= 5; n++) {
+        var found = team.locationsFound && team.locationsFound.indexOf(n) !== -1;
+        dots += '<div class="loc-dot ' + (found ? "found" : "missing") + '">' + (found ? "✓" : n) + '</div>';
+      }
+
+      html += '<div class="team-row ' + statusClass + '">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">' +
+        '<div style="font-weight:800;font-size:16px;">' + rankBadge + escapeHtml(team.name) + '</div>' +
+        statusLabel +
+        '</div>' +
+        '<div style="display:flex;gap:6px;align-items:center;margin-bottom:' + (team.finished ? '8' : '0') + 'px;">' + dots + '</div>' +
+        (team.finished ? '<div style="font-size:13px;color:#064E3B;font-weight:600;">⏱ Finish time: ' + team.finishTime + '</div>' : '') +
+        '</div>';
+    });
+
+    document.getElementById("team-list").innerHTML = html;
+    document.getElementById("last-updated").textContent = "Updated " + new Date().toLocaleTimeString();
+  }
+
+  function updateStats(total, finished, active) {
+    document.getElementById("stat-teams").textContent = total;
+    document.getElementById("stat-finished").textContent = finished;
+    document.getElementById("stat-active").textContent = active;
+  }
+
+  function buildLocationKey() {
+    var html = "";
+    HUNT_CONFIG.locations.forEach(function(loc) {
+      html += '<div style="display:flex;gap:8px;align-items:center;">' +
+        '<div class="loc-dot found">' + loc.id + '</div>' +
+        '<span style="font-size:13px;">' + loc.icon + ' ' + loc.name + '</span>' +
+        '</div>';
+    });
+    document.getElementById("loc-key-items").innerHTML = html;
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+
+  // ── QR Codes tab ──────────────────────────────────────────────────────────
+  function generateQRCodes() {
+    var base = window.location.href.replace(/admin\.html.*$/, "");
+    document.getElementById("url-display").innerHTML =
+      "✅ QR codes linking to: <strong>" + base + "location/N.html</strong>";
+
     var grid = document.getElementById("qr-grid");
     grid.innerHTML = "";
 
     HUNT_CONFIG.locations.forEach(function(loc) {
       var url = base + "location/" + loc.id + ".html";
-
       var card = document.createElement("div");
       card.className = "qr-card";
-
-      var numDiv = document.createElement("div");
-      numDiv.className = "qr-loc-num";
-      numDiv.textContent = loc.id;
-      card.appendChild(numDiv);
-
-      var qrWrap = document.createElement("div");
-      qrWrap.id = "qr-" + loc.id;
-      card.appendChild(qrWrap);
-
-      var nameEl = document.createElement("strong");
-      nameEl.textContent = loc.icon + " " + loc.name;
-      card.appendChild(nameEl);
-
-      var urlEl = document.createElement("small");
-      urlEl.textContent = url;
-      card.appendChild(urlEl);
-
+      card.innerHTML =
+        '<div class="qr-loc-num">' + loc.id + '</div>' +
+        '<div id="qr-' + loc.id + '"></div>' +
+        '<strong>' + loc.icon + ' ' + loc.name + '</strong>' +
+        '<small>' + url + '</small>';
       grid.appendChild(card);
 
-      // Slight delay so DOM is ready
       setTimeout(function() {
         new QRCode(document.getElementById("qr-" + loc.id), {
-          text: url,
-          width: 180,
-          height: 180,
-          colorDark: "#1E293B",
-          colorLight: "#FFFFFF",
+          text: url, width: 180, height: 180,
+          colorDark: "#1E293B", colorLight: "#FFFFFF",
           correctLevel: QRCode.CorrectLevel.M
         });
       }, loc.id * 80);

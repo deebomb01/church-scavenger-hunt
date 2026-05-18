@@ -1,14 +1,14 @@
 // ─── HUNT CONFIGURATION ────────────────────────────────────────────────────
-// After deploying to GitHub Pages, update scriptUrl with your Google Apps Script URL.
 const HUNT_CONFIG = {
   name: "Move Church Kids Scavenger Hunt",
-  scriptUrl: "https://script.google.com/macros/s/AKfycbxvT2FeXbBdqv-F7FUI8OMllj4AenqLJ25wDf92ErL8lBaSzXKfBI4xd3mmj_ZMSvto_w/exec", // TODO: Paste your Google Apps Script deployment URL here
+  huntDurationMs: 45 * 60 * 1000, // 45-minute countdown
+  scriptUrl: "https://script.google.com/macros/s/AKfycbxvT2FeXbBdqv-F7FUI8OMllj4AenqLJ25wDf92ErL8lBaSzXKfBI4xd3mmj_ZMSvto_w/exec",
   locations: [
     {
       id: 1,
       name: "Main Entrance",
       icon: "🚪",
-      hint: "Where every journey begins — find the front door!",
+      clue: "I stand at the start of every visit and the end of every goodbye. No matter who you are or where you came from, you walked through me to get here today. Find the very first thing you saw when you arrived.",
       lat: 38.6450,
       lng: -77.2966
     },
@@ -16,7 +16,7 @@ const HUNT_CONFIG = {
       id: 2,
       name: "Playground",
       icon: "⛹️",
-      hint: "Where kids love to run, jump, and play outside!",
+      clue: "When the lesson ends and energy has nowhere to go, little feet race here to run, swing, and shout with joy. Look for me outside under the open sky — where laughter never fades away.",
       lat: 38.6440,
       lng: -77.2973
     },
@@ -24,7 +24,7 @@ const HUNT_CONFIG = {
       id: 3,
       name: "Children's Wing",
       icon: "📚",
-      hint: "The hallway where little ones learn and grow in faith!",
+      clue: "Small chairs, big lessons, and colorful walls. This is where the next generation comes each week to hear God's Word and grow in faith. Listen for the sound of tiny voices.",
       lat: 38.6448,
       lng: -77.2958
     },
@@ -32,7 +32,7 @@ const HUNT_CONFIG = {
       id: 4,
       name: "Sanctuary",
       icon: "🙏",
-      hint: "The sacred place where we gather together to worship!",
+      clue: "This room was built for one purpose — to lift voices and bow hearts. It holds the most seats and carries the biggest sound in the building. Follow the sound of worship to find it.",
       lat: 38.6442,
       lng: -77.2963
     },
@@ -40,12 +40,15 @@ const HUNT_CONFIG = {
       id: 5,
       name: "Fellowship Hall",
       icon: "🍽️",
-      hint: "Where we eat, laugh, and share life together!",
+      clue: "Every great church has a table. This is where meals are shared, neighbors become family, and no one leaves hungry. Find the room that smells like a feast.",
       lat: 38.6447,
       lng: -77.2971
     }
   ]
 };
+
+// Admin password — change this before your event
+const ADMIN_PASSWORD = "movechurch2025";
 
 // ─── TEAM / PROGRESS STORAGE ───────────────────────────────────────────────
 
@@ -84,13 +87,18 @@ function markVisited(locationId) {
   if (!progress[locationId]) {
     progress[locationId] = Date.now();
     localStorage.setItem("hunt_progress", JSON.stringify(progress));
+    // Fire-and-forget backend checkin
+    const team = getTeam();
+    if (team) {
+      submitCheckin(team.name, locationId, Date.now() - team.startTime);
+    }
   }
   return progress;
 }
 
 function isComplete() {
   const progress = getProgress();
-  return HUNT_CONFIG.locations.every(function(loc) { return !!progress[loc.id]; });
+  return HUNT_CONFIG.locations.every(loc => !!progress[loc.id]);
 }
 
 function clearHunt() {
@@ -105,66 +113,113 @@ function visitedCount() {
 // ─── PROGRESS BAR UI ───────────────────────────────────────────────────────
 
 function renderProgressBar(containerId, currentId) {
-  var el = document.getElementById(containerId);
+  const el = document.getElementById(containerId);
   if (!el) return;
-  var progress = getProgress();
-  var html = '<div class="progress-track">';
-  HUNT_CONFIG.locations.forEach(function(loc, i) {
-    var visited = !!progress[loc.id];
-    var isCurrent = loc.id === currentId;
-    var cls = "progress-dot";
+  const progress = getProgress();
+  let html = '<div class="progress-track">';
+  HUNT_CONFIG.locations.forEach((loc, i) => {
+    const visited = !!progress[loc.id];
+    const isCurrent = loc.id === currentId;
+    let cls = "progress-dot";
     if (visited) cls += " visited";
     else if (isCurrent) cls += " current";
-    var label = visited ? "✓" : loc.id;
-    html += '<div class="' + cls + '" title="' + loc.name + '">' + label + "</div>";
+    const label = visited ? "✓" : loc.id;
+    html += `<div class="${cls}" title="${visited ? loc.name : "Not found yet"}">${label}</div>`;
     if (i < HUNT_CONFIG.locations.length - 1) {
-      html += '<div class="progress-line' + (visited ? " visited" : "") + '"></div>';
+      html += `<div class="progress-line${visited ? " visited" : ""}"></div>`;
     }
   });
   html += "</div>";
   el.innerHTML = html;
 }
 
+// ─── COUNTDOWN TIMER ───────────────────────────────────────────────────────
+
+function getTimeRemaining() {
+  const team = getTeam();
+  if (!team) return null;
+  const elapsed = Date.now() - team.startTime;
+  return Math.max(0, HUNT_CONFIG.huntDurationMs - elapsed);
+}
+
+function formatCountdown(ms) {
+  const totalSec = Math.ceil(ms / 1000);
+  const min = Math.floor(totalSec / 60);
+  const sec = totalSec % 60;
+  return String(min).padStart(2, "0") + ":" + String(sec).padStart(2, "0");
+}
+
+function startCountdownTimer(elementId, onExpire) {
+  const el = document.getElementById(elementId);
+  if (!el) return null;
+
+  function tick() {
+    const remaining = getTimeRemaining();
+    if (remaining === null) return;
+    el.textContent = formatCountdown(remaining);
+    // Color feedback
+    if (remaining <= 5 * 60 * 1000) {
+      el.style.color = "#EF4444";
+    } else if (remaining <= 10 * 60 * 1000) {
+      el.style.color = "#F59E0B";
+    } else {
+      el.style.color = "";
+    }
+    if (remaining === 0 && typeof onExpire === "function") {
+      onExpire();
+    }
+  }
+
+  tick();
+  return setInterval(tick, 1000);
+}
+
 // ─── TIME FORMATTING ───────────────────────────────────────────────────────
 
 function formatTimeShort(ms) {
-  var s = Math.floor(ms / 1000);
-  var m = Math.floor(s / 60);
-  var sec = s % 60;
+  const s = Math.floor(ms / 1000);
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
   return m + ":" + (sec < 10 ? "0" : "") + sec;
 }
 
-// ─── LEADERBOARD API (Google Apps Script) ──────────────────────────────────
+// ─── LEADERBOARD / CHECKIN API ─────────────────────────────────────────────
+
+function submitCheckin(teamName, locationId, timeMs) {
+  const url = HUNT_CONFIG.scriptUrl;
+  if (!url) return;
+  const params = new URLSearchParams({ action: "checkin", team: teamName, location: locationId, timeMs });
+  fetch(url + "?" + params.toString()).catch(() => {});
+}
 
 async function submitCompletion(teamName, startTime, endTime) {
-  var url = HUNT_CONFIG.scriptUrl;
+  const url = HUNT_CONFIG.scriptUrl;
   if (!url) return null;
-  var totalMs = endTime - startTime;
-  var params = new URLSearchParams({
-    action: "submit",
-    team: teamName,
-    startTime: startTime,
-    endTime: endTime,
-    totalMs: totalMs
+  const params = new URLSearchParams({
+    action: "submit", team: teamName,
+    startTime, endTime, totalMs: endTime - startTime
   });
   try {
-    var res = await fetch(url + "?" + params.toString());
+    const res = await fetch(url + "?" + params.toString());
     return await res.json();
-  } catch (e) {
-    console.warn("Leaderboard submit failed:", e);
-    return null;
-  }
+  } catch { return null; }
 }
 
 async function fetchLeaderboard() {
-  var url = HUNT_CONFIG.scriptUrl;
+  const url = HUNT_CONFIG.scriptUrl;
   if (!url) return null;
   try {
-    var res = await fetch(url + "?action=leaderboard");
-    var data = await res.json();
+    const res = await fetch(url + "?action=leaderboard");
+    const data = await res.json();
     return data.entries || [];
-  } catch (e) {
-    console.warn("Leaderboard fetch failed:", e);
-    return null;
-  }
+  } catch { return null; }
+}
+
+async function fetchAdminProgress() {
+  const url = HUNT_CONFIG.scriptUrl;
+  if (!url) return null;
+  try {
+    const res = await fetch(url + "?action=progress");
+    return await res.json();
+  } catch { return null; }
 }
