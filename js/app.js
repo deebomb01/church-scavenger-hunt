@@ -9,40 +9,40 @@ const HUNT_CONFIG = {
       name: "Main Entrance",
       icon: "🚪",
       clue: "I stand at the start of every visit and the end of every goodbye. No matter who you are or where you came from, you walked through me to get here today. Find the very first thing you saw when you arrived.",
-      lat: 38.6450,
-      lng: -77.2966
+      lat: 38.6765,
+      lng: -77.3350
     },
     {
       id: 2,
       name: "Playground",
       icon: "⛹️",
       clue: "When the lesson ends and energy has nowhere to go, little feet race here to run, swing, and shout with joy. Look for me outside under the open sky — where laughter never fades away.",
-      lat: 38.6440,
-      lng: -77.2973
+      lat: 38.6757,
+      lng: -77.3357
     },
     {
       id: 3,
       name: "Children's Wing",
       icon: "📚",
       clue: "Small chairs, big lessons, and colorful walls. This is where the next generation comes each week to hear God's Word and grow in faith. Listen for the sound of tiny voices.",
-      lat: 38.6448,
-      lng: -77.2958
+      lat: 38.6763,
+      lng: -77.3343
     },
     {
       id: 4,
       name: "Sanctuary",
       icon: "🙏",
       clue: "This room was built for one purpose — to lift voices and bow hearts. It holds the most seats and carries the biggest sound in the building. Follow the sound of worship to find it.",
-      lat: 38.6442,
-      lng: -77.2963
+      lat: 38.6759,
+      lng: -77.3349
     },
     {
       id: 5,
       name: "Fellowship Hall",
       icon: "🍽️",
       clue: "Every great church has a table. This is where meals are shared, neighbors become family, and no one leaves hungry. Find the room that smells like a feast.",
-      lat: 38.6447,
-      lng: -77.2971
+      lat: 38.6764,
+      lng: -77.3355
     }
   ]
 };
