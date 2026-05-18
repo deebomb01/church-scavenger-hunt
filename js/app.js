@@ -2,7 +2,7 @@
 // After deploying to GitHub Pages, update scriptUrl with your Google Apps Script URL.
 const HUNT_CONFIG = {
   name: "Move Church Kids Scavenger Hunt",
-  scriptUrl: "", // TODO: Paste your Google Apps Script deployment URL here
+  scriptUrl: "https://script.google.com/macros/s/AKfycbxvT2FeXbBdqv-F7FUI8OMllj4AenqLJ25wDf92ErL8lBaSzXKfBI4xd3mmj_ZMSvto_w/exec", // TODO: Paste your Google Apps Script deployment URL here
   locations: [
     {
       id: 1,
