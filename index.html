@@ -204,19 +204,16 @@
     }).addTo(map);
 
     var progress = getProgress();
-    HUNT_CONFIG.locations.forEach(function(loc) {
-      var visited = !!progress[loc.id];
+    var foundLocs = HUNT_CONFIG.locations.filter(function(loc) { return !!progress[loc.id]; });
+
+    foundLocs.forEach(function(loc) {
       var icon = L.divIcon({
-        html: visited
-          ? '<div style="background:#10B981;color:white;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.28);">✓</div>'
-          : '<div style="background:#94A3B8;color:white;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.2);">?</div>',
+        html: '<div style="background:#10B981;color:white;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.28);">✓</div>',
         className: "", iconSize: [36, 36], iconAnchor: [18, 18], popupAnchor: [0, -20]
       });
       L.marker([loc.lat, loc.lng], { icon: icon })
         .addTo(map)
-        .bindPopup(visited
-          ? "<strong>" + loc.icon + " " + loc.name + "</strong><br><small>✅ Discovered!</small>"
-          : "<strong>📍 Unknown Location</strong><br><small>Solve the clue to reveal this spot</small>");
+        .bindPopup("<strong>" + loc.icon + " " + loc.name + "</strong><br><small>✅ Discovered!</small>");
     });
   }
 
